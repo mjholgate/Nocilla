@@ -25,7 +25,17 @@
     NSURLRequest* request = [self request];
 	id<NSURLProtocolClient> client = [self client];
 
-    LSStubResponse* stubbedResponse = [[LSNocilla sharedInstance] responseForRequest:request];
+    LSStubResponse* stubbedResponse;
+
+    @try {
+        stubbedResponse = [[LSNocilla sharedInstance] responseForRequest:request];
+    }
+    @catch (NSException *exception) {
+        NSError *error = [NSError errorWithDomain:@"Nocilla" code:0 userInfo:nil];
+        [client URLProtocol:self didFailWithError:error];
+        return;
+    }
+
 
     if (stubbedResponse.shouldFail) {
         [client URLProtocol:self didFailWithError:stubbedResponse.error];
